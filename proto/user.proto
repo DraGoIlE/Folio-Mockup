@@ -1,0 +1,56 @@
+syntax = "proto3";
+
+package userservice;
+
+service UserService {
+  rpc GetCandidateProfile (GetCandidateProfileRequest) returns (CandidateProfile);
+  rpc GetJobProfile (GetJobProfileRequest) returns (JobProfile);
+  rpc ListCandidates (ListCandidatesRequest) returns (ListCandidatesResponse);
+  rpc ListJobs (ListJobsRequest) returns (ListJobsResponse);
+}
+
+message GetCandidateProfileRequest {
+  string id = 1;
+}
+
+message CandidateProfile {
+  string id = 1;
+  string name = 2;
+  repeated string skills = 3;
+  int32 experience_years = 4;
+  int32 expected_salary = 5;
+  string cv_url = 6;
+}
+
+message GetJobProfileRequest {
+  string id = 1;
+}
+
+message JobProfile {
+  string id = 1;
+  string hrd_id = 2;
+  string company_name = 3;
+  string title = 4;
+  string description = 5;
+  repeated string required_skills = 6;
+  int32 salary_min = 7;
+  int32 salary_max = 8;
+}
+
+message ListCandidatesRequest {
+  repeated string preferred_skills = 1;
+  int32 limit = 2;
+}
+
+message ListCandidatesResponse {
+  repeated CandidateProfile candidates = 1;
+}
+
+message ListJobsRequest {
+  repeated string candidate_skills = 1;
+  int32 limit = 2;
+}
+
+message ListJobsResponse {
+  repeated JobProfile jobs = 1;
+}

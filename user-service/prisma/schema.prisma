@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum JobStatus {
+  active
+  closed
+}
+
+model Candidate {
+  id              String   @id @default(uuid())
+  accountId       String   @unique @map("account_id")
+  fullName        String?  @map("full_name")
+  skills          String[] @default([])
+  cvUrl           String?  @map("cv_url")
+  expectedSalary  Int?     @map("expected_salary")
+  experienceYears Int      @default(0) @map("experience_years")
+
+  @@map("candidates")
+}
+
+model Company {
+  id          String       @id @default(uuid())
+  accountId   String       @unique @map("account_id")
+  companyName String?      @map("company_name")
+  industry    String?
+  description String?
+  jobPostings JobPosting[]
+
+  @@map("companies")
+}
+
+model JobPosting {
+  id             String    @id @default(uuid())
+  companyId      String    @map("company_id")
+  company        Company   @relation(fields: [companyId], references: [id])
+  title          String
+  description    String?
+  requirements   String?
+  requiredSkills String[]  @default([]) @map("required_skills")
+  salaryMin      Int?      @map("salary_min")
+  salaryMax      Int?      @map("salary_max")
+  status         JobStatus @default(active)
+
+  @@map("job_postings")
+}
