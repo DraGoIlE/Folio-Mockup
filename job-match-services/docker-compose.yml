@@ -1,0 +1,36 @@
+version: "3.9"
+services:
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+  mock-user-service:
+    build: ./mock-user-service
+    ports:
+      - "50052:50052"
+  matchmaking-service:
+    build: ./matchmaking-service
+    environment:
+      USER_SERVICE_ADDR: mock-user-service:50052
+      CHAT_SERVICE_URL: http://chat-service:4000
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "50051:50051"
+    depends_on:
+      - mock-user-service
+      - chat-service
+      - redis
+  chat-service:
+    build: ./chat-service
+    environment:
+      JWT_SKIP_VERIFY: "true"
+    ports:
+      - "4000:4000"
+  ranking-service:
+    build: ./ranking-service
+    environment:
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "50053:50053"
+    depends_on:
+      - redis

@@ -1,0 +1,89 @@
+syntax = "proto3";
+
+package matchmaking;
+
+service MatchmakingService {
+  // Ambil kartu rekomendasi buat di-swipe.
+  // role="CANDIDATE" -> dapet feed loker. role="HRD" -> dapet feed kandidat.
+  rpc GetFeed (FeedRequest) returns (FeedResponse);
+
+  // Swipe kanan/kiri. Kalau ini bikin match (kedua pihak swipe kanan),
+  // response.matched = true dan match_id keisi. Bila pembuatan chat room
+  // gagal, saga akan mengompensasi match sehingga response.matched = false.
+  rpc Swipe (SwipeRequest) returns (SwipeResponse);
+
+  // Lihat semua match yang udah kejadian buat user ini
+  rpc GetMatches (GetMatchesRequest) returns (GetMatchesResponse);
+
+  // Streaming: dapet notifikasi real-time begitu ada match baru,
+  // tanpa perlu polling. Dipakai buat trigger pindah ke halaman Chat.
+  rpc StreamMatchNotifications (StreamRequest) returns (stream MatchNotification);
+}
+
+enum Role {
+  CANDIDATE = 0;
+  HRD = 1;
+}
+
+enum SwipeDirection {
+  LEFT = 0;  // dislike
+  RIGHT = 1; // like
+}
+
+message FeedRequest {
+  string user_id = 1;
+  Role role = 2;
+  int32 limit = 3;
+}
+
+message FeedCard {
+  string target_id = 1;   // job_id kalau role=CANDIDATE, candidate_id kalau role=HRD
+  string title = 2;       // job title ATAU nama kandidat
+  string subtitle = 3;    // nama perusahaan ATAU ringkasan skill
+  repeated string tags = 4; // skills
+  double relevance_score = 5; // seberapa cocok, buat urutan feed
+}
+
+message FeedResponse {
+  repeated FeedCard cards = 1;
+}
+
+message SwipeRequest {
+  string actor_id = 1;    // siapa yang swipe
+  Role actor_role = 2;
+  string target_id = 3;   // siapa/apa yang di-swipe
+  SwipeDirection direction = 4;
+}
+
+message SwipeResponse {
+  bool recorded = 1;
+  bool matched = 2;
+  string match_id = 3;
+}
+
+message GetMatchesRequest {
+  string user_id = 1;
+}
+
+message MatchInfo {
+  string match_id = 1;
+  string candidate_id = 2;
+  string job_id = 3;
+  string hrd_id = 4;
+  int64 matched_at = 5;
+}
+
+message GetMatchesResponse {
+  repeated MatchInfo matches = 1;
+}
+
+message StreamRequest {
+  string user_id = 1;
+}
+
+message MatchNotification {
+  string match_id = 1;
+  string candidate_id = 2;
+  string job_id = 3;
+  string hrd_id = 4;
+}

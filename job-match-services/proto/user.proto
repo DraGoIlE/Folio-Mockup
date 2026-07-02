@@ -1,0 +1,61 @@
+syntax = "proto3";
+
+package userservice;
+
+// Ini kontrak yang HARUS dipenuhi User Service (punya Rehanu).
+// Selama Rehanu belum selesai, mock-user-service mengimplementasikan
+// service ini dengan data dummy in-memory supaya Matchmaking Service
+// bisa dikembangkan & ditest secara independen.
+
+service UserService {
+  rpc GetCandidateProfile (GetByIdRequest) returns (CandidateProfile);
+  rpc GetJobProfile (GetByIdRequest) returns (JobProfile);
+
+  // Dipakai Matchmaking Service buat narik kandidat calon rekomendasi
+  // buat sebuah loker (dan sebaliknya)
+  rpc ListCandidates (ListCandidatesRequest) returns (ListCandidatesResponse);
+  rpc ListJobs (ListJobsRequest) returns (ListJobsResponse);
+}
+
+message GetByIdRequest {
+  string id = 1;
+}
+
+message CandidateProfile {
+  string id = 1;
+  string name = 2;
+  repeated string skills = 3;
+  int32 experience_years = 4;
+  int64 expected_salary = 5;
+  string cv_url = 6;
+}
+
+message JobProfile {
+  string id = 1;
+  string hrd_id = 2;
+  string company_name = 3;
+  string title = 4;
+  string description = 5;
+  repeated string required_skills = 6;
+  int64 salary_min = 7;
+  int64 salary_max = 8;
+}
+
+message ListCandidatesRequest {
+  // filter opsional, dipakai buat scoring relevansi di Matchmaking Service
+  repeated string preferred_skills = 1;
+  int32 limit = 2;
+}
+
+message ListCandidatesResponse {
+  repeated CandidateProfile candidates = 1;
+}
+
+message ListJobsRequest {
+  repeated string candidate_skills = 1;
+  int32 limit = 2;
+}
+
+message ListJobsResponse {
+  repeated JobProfile jobs = 1;
+}
